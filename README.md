@@ -1,2 +1,3 @@
-# VAE
-ChemNet
+# Variation AutoEncoder VAE
+
+## ChemNet
