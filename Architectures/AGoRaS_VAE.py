@@ -3,17 +3,16 @@
 """
 Created on Tue Aug  4 10:53:37 2020
 
-@author: tempker
+@author: Robert Tempke
+
+Architecture for the AGoRaS VAE design for synthetic creation of chemical reaction strings in SMILES format
+link to paper here
 """
 import pickle as pk
 import numpy as np
 import os
 from keras.layers.advanced_activations import ELU
 from keras.callbacks import ModelCheckpoint
-
-os.environ["KERAS_BACKEND"] = "tensorflow"
-kerasBKED = os.environ["KERAS_BACKEND"] 
-print(kerasBKED)
 from keras.optimizers import Adam
 from keras.models import Model, Sequential, Input
 from keras.layers import Bidirectional, Dense, Embedding, Input, Lambda, LSTM, RepeatVector, TimeDistributed, Layer, Activation, Dropout
@@ -25,16 +24,24 @@ import tensorflow_addons as tfa
 from keras.preprocessing.sequence import pad_sequences
 from scipy import spatial
 
+os.environ["KERAS_BACKEND"] = "tensorflow"
+kerasBKED = os.environ["KERAS_BACKEND"] 
+print(kerasBKED)
+
 tf.compat.v1.disable_eager_execution()
 
-data_GAN = open('/nfs/home/6/tempker/GAN/Dataset/pkls/Balanced_original_equations_training_sequence_prebalanced_equations__1212020.pkl', 'rb')
 
-data_GAN = pk.load(data_GAN)
-train_data = list(data_GAN.values())[0]
-wrd2ind = list(data_GAN.values())[1]
-ind2wrd = list(data_GAN.values())[2]
-vocabulary = list(data_GAN.values())[3]
-tokenizer = list(data_GAN.values())[4]
+"""
+Please see the DataCleaning directory for instructions on how to prepare the data for machine learning ingestion
+"""
+
+reaction_data = open('/nfs/home/6/tempker/GAN/Dataset/pkls/Balanced_original_equations_training_sequence_prebalanced_equations__1212020.pkl', 'rb')
+reaction_data = pk.load(reaction_data)
+train_data = list(reaction_data.values())[0]
+wrd2ind = list(reaction_data.values())[1]
+ind2wrd = list(reaction_data.values())[2]
+vocabulary = list(reaction_data.values())[3]
+tokenizer = list(reaction_data.values())[4]
 
 tokenizer.word_index = wrd2ind.copy()
 
@@ -219,6 +226,7 @@ def save_latent_sentence(sent_vect):
     return w_list
     
 def print_latent_sentence(sent_vect):
+
     sent_vect = np.reshape(sent_vect,[1,latent_dim])
     sent_reconstructed = generator.predict(sent_vect)
     sent_reconstructed = np.reshape(sent_reconstructed,[max_len,nb_letters])
