@@ -62,24 +62,24 @@ optimizer = Adam(lr=learning_rate)
 
 
 
-x = Input(shape=(max_length_of_equation,))
-x_embed = Embedding(number_of_letters, intermediate_dimension, input_length=max_length_of_equation)(x)
-h = Bidirectional(LSTM(intermediate_dimension, return_sequences=False, recurrent_dropout=0.2), merge_mode='concat')(x_embed)
-z_mean = Dense(latent_dimension)(h)
-z_log_var = Dense(latent_dimension)(h)
+input = Input(shape=(max_length_of_equation,))
+embedded_layer = Embedding(number_of_letters, intermediate_dimension, input_length=max_length_of_equation)(input)
+latent_vector = Bidirectional(LSTM(intermediate_dimension, return_sequences=False, recurrent_dropout=0.2), merge_mode='concat')(embedded_layer)
+z_mean = Dense(latent_dimension)(latent_vector)
+z_log_var = Dense(latent_dimension)(latent_vector)
 
 z = Lambda(sampling, output_shape=(latent_dimension,))([z_mean, z_log_var])
 repeated_context = RepeatVector(max_length_of_equation)
-decoder_h = LSTM(intermediate_dimension, return_sequences=True, recurrent_dropout=0.2)
+decoder_latent_vector = LSTM(intermediate_dimension, return_sequences=True, recurrent_dropout=0.2)
 decoder_mean = Dense(number_of_letters, activation='linear')#softmax is applied in the seq2seqloss by tf #TimeDistributed()
-h_decoded = decoder_h(repeated_context(z))
-x_decoded_mean = decoder_mean(h_decoded)
+latent_vector_decoded = decoder_latent_vector(repeated_context(z))
+input_decoded_mean = decoder_mean(latent_vector_decoded)
 
     
 
 
-loss_layer = CustomVariationalLayer()([x, x_decoded_mean])
-vae = Model(x, [loss_layer])
+loss_layer = CustomVariationalLayer()([input, input_decoded_mean])
+vae = Model(input, [loss_layer])
 
 vae.compile(optimizer=optimizer, loss=[zero_loss], metrics=[kl_loss])
 vae.summary()
@@ -102,12 +102,12 @@ K.set_value(vae.optimizer.lr, learning_rate)
 vae.save_weights('models/vae_balanced_data_run_2.h5')
 #vae.load_weights('models/vae_seq2seq_test.h5')
 # build a model to project inputs on the latent space
-encoder = Model(x, z_mean)
+encoder = Model(input, z_mean)
 #encoder.save('models/encoder32dim512hid30kvocab_loss29_val34.h5')
 
 # build a generator that can sample from the learned distribution
 decoder_input = Input(shape=(latent_dimension,))
-_h_decoded = decoder_h(repeated_context(decoder_input))
+_h_decoded = decoder_latent_vector(repeated_context(decoder_input))
 _x_decoded_mean = decoder_mean(_h_decoded)
 _x_decoded_mean = Activation('softmax')(_x_decoded_mean)
 generator = Model(decoder_input, _x_decoded_mean)
@@ -146,27 +146,20 @@ print('-----------------')
 
 new_sents_interp(sentence1, sentence2, 5, encoder, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
         
-gen = []
+generated_equations = []
+#A list of common errors to help eliminate bad equations from the generated set. 
 delete_list = ['~~','>>','= ', '[[', ']]', '> >', '[]','()','[ ', '[)', '(]', '~ ~', '\ \ ',
                '###', '..', '==', '# ', '((', '))']
 
-while len(gen) < 500000:
-    if len(gen) < 500000:
+while len(generated_equations) < 500000:
+    if len(generated_equations) < 500000:
         num1 = randint(0, 6920)
         num2 = randint(0, 6920)
         sent1 = dataset[num1].reshape(1,len(dataset[0]))
         sent2 = dataset[num2].reshape(1,len(dataset[0]))
-        newintrp =  new_sents_generation(sent1, sent2, 25)
+        newintrp =  new_sents_generation(sent1, sent2, 25, encoder, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
         newintrp = [x for x in newintrp if all(i not in x for i in delete_list)]
     gen.extend(newintrp)
     gen = list(set(gen))
     
     print(len(gen))
-    
-  
-org_eqs = pk.load(open('/.nfs/home/6/tempker/GAN/Dataset/pkls/Master_list_wo_startandend_tokens.pkl', "rb") )
-    
-generated = list(filter(lambda x: x not in org_eqs, gen))
-
-output = open('/nfs/home/6/tempker/aae/generated_text/VAE_generated/vae_balanced_data_run_2_25atatime.pkl','wb')
-pk.dump(gen, output)   
