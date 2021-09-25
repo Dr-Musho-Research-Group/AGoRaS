@@ -12,7 +12,7 @@ import rdkit.Chem.rdMolDescriptors as molD
 import pandas as pd
 import pickle as pk
 
-PIK = pk.load(open(r'/nfs/home/6/tempker/GAN/Dataset/pkls/Original_method_smiles_species_for_rdkit_compare_111920.pkl','rb'))
+PIK = pk.load(open(r'Original_method_smiles_species_for_rdkit_compare_111920.pkl','rb'))
 PIK = PIK.reset_index(drop=True)
 species = PIK['cas_number']
 smiles = PIK['smiles']

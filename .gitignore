@@ -122,6 +122,7 @@ venv.bak/
 
 # mypy
 /original_dataset_creation
+/graphing_functions
 .mypy_cache/
 .dmypy.json
 dmypy.json
