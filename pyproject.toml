@@ -11,6 +11,7 @@ numpy = "1.19.5"
 tensorflow = "^2.6.0"
 tensorflow-addons = "^0.14.0"
 scipy = "^1.7.1"
+pathlib = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 

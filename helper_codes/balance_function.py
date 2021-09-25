@@ -1,36 +1,5 @@
-
 from math import gcd
 import re
-# folder = '500k_gen_august/first_half'
-# os.chdir('/.nfs/home/6/tempker/aae/generated_text/VAE_generated/'+folder)
-# os.chdir('/.nfs/home/6/tempker/aae/generated_text/VAE_generated')
-# PATH = "/.nfs/home/6/tempker/aae/generated_text/VAE_generated"
-# EXT = "*.pkl"
-# pkl_files = [file
-#                  for path, subdir, files in os.walk(PATH)
-#                  for file in glob(os.path.join(path, EXT))]
-# def openf(pik):
-#     try:
-#         with open(pik, 'rb') as f:
-#                 file = pk.load(f)
-#                 return(file)
-
-#     except:
-#         pass
-    
-    
-# file = [openf(x) for x in pkl_files]
-# file = [x for x in file if x]
-# Eqns = [x for y in file for x in y]
-# Eqns = list(set(Eqns))
-# Eqns = [x.strip() for x in Eqns]
-# delete_list = ['~~','>>','= ', '[[', ']]', '> >', '[]','()','[ ', '[)', '(]', '~ ~', '\ \ ',
-#                '##', '..', '==', '# ', '((', '))', '++', ' - ','--','-=-']
-# Eqns = [x for x in Eqns if all(i not in x for i in delete_list)]
-# Eqns = [x.replace('   ',' + ') for x in Eqns]
-# Eqns = [x.replace('  ',' ') for x in Eqns]
-
-
 
 def get_subs(sub_re, split_re, molstr, mul=1):
     mol = {}
@@ -46,9 +15,9 @@ def get_subs(sub_re, split_re, molstr, mul=1):
 def parse_molecule(molstr):
     elem_re = re.compile('([A-Z][a-z]?)(\d*)')
     elements = {}
-    compounds = get_subs('\[([\w\(\)]+)\](\d*)', '\[[\w\(\)]+\]\d*', molstr)
+    compounds = get_subs('\[([\w\(\)]~)\](\d*)', '\[[\w\(\)]~\]\d*', molstr)
     for s0, n0 in compounds.items():
-        comps = get_subs('\(([\w\(\)]+)\)(\d*)', '\([\w\(\)]+\)\d*', s0, n0)
+        comps = get_subs('\(([\w\(\)]~)\)(\d*)', '\([\w\(\)]~\)\d*', s0, n0)
         for s1, n1 in comps.items():
             for elem_cnt in elem_re.finditer(s1):
                 n = int(elem_cnt.group(2)) if elem_cnt.group(2) else 1
@@ -120,13 +89,4 @@ def balance_equation(skeleton):
     coeffs = back_subst(gauss_elim(matrix, len(molecules)))
     coeffstrs = [str(n) if n > 1 else '' for n in coeffs]
     molstrs = [''.join(t) for t in zip(coeffstrs, molecules)]
-    return ' > '.join([' + '.join(molstrs[:NR]), ' + '.join(molstrs[NR:])])
-
-# eqns = []
-# for i in Eqns:
-#     try:
-#         b = balance_equation(i)
-#         eqns.append(b)
-#     except:
-#         pass
-    
+    return ' > '.join([' ~ '.join(molstrs[:NR]), ' ~ '.join(molstrs[NR:])])

@@ -33,6 +33,7 @@ Please see the DataCleaning directory for instructions on how to prepare the dat
 #need to replace this with a relative path using pathlib
 reaction_data = open('/nfs/home/6/tempker/GAN/Dataset/pkls/Balanced_original_equations_training_sequence_prebalanced_equations__1212020.pkl', 'rb')
 reaction_data = pk.load(reaction_data)
+# I should just have all of this as a class and these as attributes
 dataset = list(reaction_data.values())[0]
 wrd2ind = list(reaction_data.values())[1]
 index2word = list(reaction_data.values())[2]
