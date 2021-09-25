@@ -121,6 +121,7 @@ venv.bak/
 /site
 
 # mypy
+/original_dataset_creation
 .mypy_cache/
 .dmypy.json
 dmypy.json
