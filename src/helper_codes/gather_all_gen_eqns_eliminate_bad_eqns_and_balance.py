@@ -1,8 +1,7 @@
 import pickle as pk
 import pandas as pd
 import numpy as np
-# import thermo
-# from thermo import chemical as ch 
+
 from rdkit import Chem
 import rdkit.Chem.rdMolDescriptors as molD
 from rdkit.Chem import AddHs
@@ -11,9 +10,8 @@ from glob import glob
 os.chdir('/.nfs/home/6/tempker/aae/helper_codes')
 from math import gcd
 import re
-# folder = '500k_gen_august/first_half'
-# os.chdir('/.nfs/home/6/tempker/aae/generated_text/VAE_generated/'+folder)
-# os.chdir('/.nfs/home/6/tempker/aae/generated_text/VAE_generated')
+
+# things need fixed here, mostly absolute paths
 PATH = "/.nfs/home/6/tempker/aae/generated_text/VAE_generated"
 EXT = "*.pkl"
 pkl_files = [file
@@ -93,10 +91,7 @@ from io import StringIO
 
 
 
-# def fn2(i):
-#     with StringIO() as fd:
-#         np.savetxt(fd, EQTable[i:i+N], fmt='%s', delimiter=',')
-#         return fd.getvalue().split('\n')[:-1]
+
 def fn(i):
     return EQTable[i:i+1000].to_csv(index=False, header=False).split('\n')[:-1]
 
