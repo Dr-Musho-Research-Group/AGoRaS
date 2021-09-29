@@ -1,3 +1,3 @@
-# Variation AutoEncoder VAE
+# Autonomous Generation of Reactions and Species-VAE
 
-## ChemNet
+## AGoRaS-VAE
