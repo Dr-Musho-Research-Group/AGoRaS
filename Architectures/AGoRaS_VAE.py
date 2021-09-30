@@ -37,6 +37,7 @@ reaction_data = pk.load(reaction_data)
 dataset = list(reaction_data.values())[0]
 wrd2ind = list(reaction_data.values())[1]
 index2word = list(reaction_data.values())[2]
+#don't actually need vocabulary
 vocabulary = list(reaction_data.values())[3]
 tokenizer = list(reaction_data.values())[4]
 
@@ -133,13 +134,13 @@ print(''.join(original_sent))
 
 #====================== Example ====================================#
 sentence1=['C=O ~ [OH-] > [CH]=O ~ O']
-mysent = sent_parse(sentence1, tokenizer, wrd2ind, max_length_of_equation)
+mysent = padd_sentence(sentence1, tokenizer, max_length_of_equation)
 mysent_encoded = encoder.predict(mysent, batch_size = 1)
 print_latent_sentence(mysent_encoded, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
 print_latent_sentence(find_similar_encoding(mysent_encoded), generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
 
 sentence2=['C.CCCO ~ O=O > CC(=O)C(C)=O ~ [OH-]']
-mysent2 = sent_parse(sentence2, tokenizer, wrd2ind, max_length_of_equation)
+mysent2 = padd_sentence(sentence2, tokenizer, max_length_of_equation)
 mysent_encoded2 = encoder.predict(mysent2, batch_size = 1)
 print_latent_sentence(mysent_encoded2, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
 print_latent_sentence(find_similar_encoding(mysent_encoded2), generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)

@@ -2,14 +2,14 @@ from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 from scipy import spatial
 
-# function to parse a sentence
-def sent_parse(sentence, tokenizer, wrd2ind, max_length_of_equation):
+
+def padd_sentence(sentence, tokenizer, max_length_of_equation):
     sequence = tokenizer.texts_to_sequences(sentence)
     return pad_sequences(
         sequence,
         maxlen=max_length_of_equation,
         padding='post',
-        value=wrd2ind.get(' ', ' '),
+        value=tokenizer.word_index.get(" "),
     )
 
 # input: encoded sentence vector
@@ -30,42 +30,45 @@ def shortest_homology(point_one, point_two, num):
     return [point_one + s * dist_vec for s in sample]
 
 
-def save_latent_sentence(sent_vect, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word):
+def save_latent_sentence(sent_vect, generator, latent_dimension, max_length_of_equation, tokenizer):
     sent_vect = np.reshape(sent_vect,[1,latent_dimension])
     sent_reconstructed = generator.predict(sent_vect)
+    number_of_letters = len(tokenizer.word_index)
     sent_reconstructed = np.reshape(sent_reconstructed,[max_length_of_equation,number_of_letters])
     reconstructed_indexes = np.apply_along_axis(np.argmax, 1, sent_reconstructed)
-    word_list = list(np.vectorize(index2word.get)(reconstructed_indexes))
+    word_list = list(np.vectorize(tokenizer.index_word.get)(reconstructed_indexes))
     w_list = [w for w in word_list if w not in ['pad']]
     w_list = ''.join(w_list)
     return w_list
     
-def print_latent_sentence(sent_vect, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word):
+def print_latent_sentence(sent_vect, generator, latent_dimension, max_length_of_equation, tokenizer):
 
     sent_vect = np.reshape(sent_vect,[1,latent_dimension])
     sent_reconstructed = generator.predict(sent_vect)
+    number_of_letters = len(tokenizer.word_index)
     sent_reconstructed = np.reshape(sent_reconstructed,[max_length_of_equation,number_of_letters])
     reconstructed_indexes = np.apply_along_axis(np.argmax, 1, sent_reconstructed)
-    word_list = list(np.vectorize(index2word.get)(reconstructed_indexes))
+    word_list = list(np.vectorize(tokenizer.index_word.get)(reconstructed_indexes))
     w_list = [w for w in word_list if w not in ['pad']]
     print(''.join(w_list))
         
-def new_sents_interp(sent1, sent2, n, encoder, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word):
-    tok_sent1 = sent_parse(sent1)
-    tok_sent2 = sent_parse(sent2)
+def new_sents_interp(sent1, sent2, n, encoder, generator, latent_dimension, max_length_of_equation, tokenizer):
+    tok_sent1 = padd_sentence(sent1)
+    tok_sent2 = padd_sentence(sent2)
     enc_sent1 = encoder.predict(tok_sent1, batch_size = 1)
     enc_sent2 = encoder.predict(tok_sent2, batch_size = 1)
     test_hom = shortest_homology(enc_sent1, enc_sent2, n)
+    number_of_letters = len(tokenizer.word_index)
     for point in test_hom:
-        print_latent_sentence(point, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
+        print_latent_sentence(point, generator, latent_dimension, max_length_of_equation, number_of_letters, tokenizer)
         
 
-def new_sents_generation(sent1, sent2, n, encoder, generator, latent_dimension, max_length_of_equation, number_of_letters, index2wor):
+def new_sents_generation(sent1, sent2, n, encoder, generator, latent_dimension, max_length_of_equation, tokenizer):
     enc_sent1 = encoder.predict(sent1, batch_size = 1)
     enc_sent2 = encoder.predict(sent2, batch_size = 1)
     test_hom = shortest_homology(enc_sent1, enc_sent2, n)
     list_react = []
     for point in test_hom:
-        x = save_latent_sentence(point, generator, latent_dimension, max_length_of_equation, number_of_letters, index2wor)
+        x = save_latent_sentence(point, generator, latent_dimension, max_length_of_equation, tokenizer)
         list_react.append(x)
     return list_react
