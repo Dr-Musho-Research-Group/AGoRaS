@@ -30,6 +30,20 @@ def shortest_homology(point_one, point_two, num):
     return [point_one + s * dist_vec for s in sample]
 
 
+def generate_equation_sequence(vector, latent_dimension, generator):
+    equation_vector = np.reshape(vector,[1,latent_dimension])
+    return generator.predict(equation_vector)
+
+def reconstruct_indices(sequence, number_of_letters, max_length_of_equation):
+    reshaped_sequence = np.reshape(sequence,[max_length_of_equation,number_of_letters])
+    return np.apply_along_axis(np.argmax, 1, reshaped_sequence)
+
+def convert_to_smiles(sequence, tokenizer):
+    character_list = list(np.vectorize(tokenizer.index_word.get)(sequence))
+    characters = [character]
+
+
+#these two functions do the same thing, this is bad bad programing 
 def save_latent_sentence(sent_vect, generator, latent_dimension, max_length_of_equation, tokenizer):
     sent_vect = np.reshape(sent_vect,[1,latent_dimension])
     sent_reconstructed = generator.predict(sent_vect)
