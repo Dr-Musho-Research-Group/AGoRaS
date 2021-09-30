@@ -133,20 +133,21 @@ print(''.join(original_sent))
 
 
 #====================== Example ====================================#
-sentence1=['C=O ~ [OH-] > [CH]=O ~ O']
-mysent = padd_sentence(sentence1, tokenizer, max_length_of_equation)
+equation1=['C=O ~ [OH-] > [CH]=O ~ O']
+mysent = padd_equation(equation1, tokenizer, max_length_of_equation)
 mysent_encoded = encoder.predict(mysent, batch_size = 1)
 print_latent_sentence(mysent_encoded, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
 print_latent_sentence(find_similar_encoding(mysent_encoded), generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
 
-sentence2=['C.CCCO ~ O=O > CC(=O)C(C)=O ~ [OH-]']
-mysent2 = padd_sentence(sentence2, tokenizer, max_length_of_equation)
+equation2=['C.CCCO ~ O=O > CC(=O)C(C)=O ~ [OH-]']
+mysent2 = padd_equation(equation2, tokenizer, max_length_of_equation)
 mysent_encoded2 = encoder.predict(mysent2, batch_size = 1)
 print_latent_sentence(mysent_encoded2, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
 print_latent_sentence(find_similar_encoding(mysent_encoded2), generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
 print('-----------------')
+homology = calculate_equations_homology(equation1, equation2, n, encoder)
 
-new_sents_interp(sentence1, sentence2, 5, encoder, generator, latent_dimension, max_length_of_equation, number_of_letters, index2word)
+new_equation(homology, generator, latent_dimension, max_length_of_equation, tokenizer)
         
 generated_equations = []
 #A list of common errors to help eliminate bad equations from the generated set. 
