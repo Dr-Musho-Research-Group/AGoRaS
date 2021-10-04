@@ -62,11 +62,11 @@ def new_equation(homology, generator, latent_dimension, max_length_of_equation, 
         print(sequence_to_smiles(indices, tokenizer))
         
 
-def new_sents_generation(homology, generator, latent_dimension, max_length_of_equation, tokenizer):
-    list_react = []
+def new_equation_generation(homology, generator, latent_dimension, max_length_of_equation, tokenizer):
+    list_reactions = []
     for point in homology:
         sequence = generate_equation_sequence(point, latent_dimension, generator)
         indices = reconstruct_indices(sequence, len(tokenizer.word_index), max_length_of_equation)
         equation = sequence_to_smiles(indices, tokenizer)
-        list_react.append(equation)
-    return list_react
+        list_reactions.append(equation)
+    return list_reactions
