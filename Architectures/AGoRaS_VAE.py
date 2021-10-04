@@ -19,6 +19,7 @@ from src.loss_functions import zero_loss, kl_loss
 from src.loss_layers import CustomVariationalLayer
 from src.utils import sampling, create_model_checkpoint
 from src.equation_generation import *
+from pathlib import Path
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 kerasBKED = os.environ["KERAS_BACKEND"] 
@@ -26,23 +27,19 @@ print(kerasBKED)
 
 tf.compat.v1.disable_eager_execution()
 
-
 """
-Please see the DataCleaning directory for instructions on how to prepare the data for machine learning ingestion
+Please see the `create_tokenized_dataset.py` for instructions on how to prepare the data for machine learning ingestion
 """
-#need to replace this with a relative path using pathlib
-reaction_data = open('/nfs/home/6/tempker/GAN/Dataset/pkls/Balanced_original_equations_training_sequence_prebalanced_equations__1212020.pkl', 'rb')
-reaction_data = pk.load(reaction_data)
-# I should just have all of this as a class and these as attributes
-dataset = list(reaction_data.values())[0]
-wrd2ind = list(reaction_data.values())[1]
-index2word = list(reaction_data.values())[2]
-#don't actually need vocabulary
-vocabulary = list(reaction_data.values())[3]
-tokenizer = list(reaction_data.values())[4]
 
-#replace the tokenizer's word index with the one we created
-tokenizer.word_index = wrd2ind.copy()
+path_to_training_data = Path.cwd().joinpath("training_data", "reaction_data.pkl")
+
+with open('reaction_data.pkl', 'rb') as f:
+    data = pk.load(f)
+
+dataset = data["training_data"]
+tokenizer = data["tokenizer"]
+
+
 number_of_equations = dataset.shape[0]
 np.random.shuffle(dataset)
 #current training method is unstable if batch size is not a fraction of the length of training data
@@ -52,12 +49,13 @@ test = dataset[5900:6900].astype(np.int32)
 
 
 batch_size = 25
+epochs = 500
 max_length_of_equation = len(dataset[1])
 latent_dimension = 350
 intermediate_dimension = 500
 epsilon_std = 0.1
 kl_weight = 0.1
-number_of_letters = len(vocabulary)
+number_of_letters = len(tokenizer.word_index)
 learning_rate = 1e-5
 optimizer = Adam(lr=learning_rate) 
 
@@ -92,7 +90,7 @@ checkpointer = create_model_checkpoint('models', 'vae_balanced_data_run_2')
 
 
 vae.fit(training, training,
-      epochs=500,
+      epochs=epochs,
       batch_size=batch_size,
       validation_data=(test, test), callbacks=[checkpointer])
 
@@ -101,11 +99,11 @@ K.set_value(vae.optimizer.lr, learning_rate)
 
 
 
-vae.save_weights('models/vae_balanced_data_run_2.h5')
-#vae.load_weights('models/vae_seq2seq_test.h5')
+vae.save_weights('models/agoras_vae.h5')
+
 # build a model to project inputs on the latent space
 encoder = Model(input, z_mean)
-#encoder.save('models/encoder32dim512hid30kvocab_loss29_val34.h5')
+encoder.save('models/agoras_encoder.h5')
 
 # build a generator that can sample from the learned distribution
 decoder_input = Input(shape=(latent_dimension,))
@@ -113,23 +111,26 @@ _h_decoded = decoder_latent_vector(repeated_context(decoder_input))
 _x_decoded_mean = decoder_mean(_h_decoded)
 _x_decoded_mean = Activation('softmax')(_x_decoded_mean)
 generator = Model(decoder_input, _x_decoded_mean)
+generator.save('models/agoras_generator.h5')
 
 
 
+def generate_indices_from_encoded_space(encoded_vector, generator):
+    reconstructed_equation = generator.predict(encoded_vector, batch_size = 1)
+    reconstruct_indices = np.apply_along_axis(np.argmax, 1, reconstructed_equation[0])
+    return np.max(np.apply_along_axis(np.max, 1, reconstruct_indices[0]))
 
 
+def test_validation_equation(index_number, data, encoder, generator, tokenizer):
+    encoded_equation = encoder.predict(data[index_number:index_number+2,:])
+    smiles_indices = generate_indices_from_encoded_space(encoded_equation, generator)
+    smiles_equation = list(np.vectorize(tokenizer.index_word.get)(smiles_indices))
+    print(f"The reconstructed equation is {''.join(smiles_equation)}")
+    original_equation = list(np.vectorize(tokenizer.index_word.get)(data[index_number]))
+    print(f"The original equation is {''.join(original_equation)}")
 
-#test on a validation sentence
-sent_idx = 200
-sent_encoded = encoder.predict(test[sent_idx:sent_idx+2,:])
-x_test_reconstructed = generator.predict(sent_encoded, batch_size = 1)
-reconstructed_indexes = np.apply_along_axis(np.argmax, 1, x_test_reconstructed[0])
-np.apply_along_axis(np.max, 1, x_test_reconstructed[0])
-np.max(np.apply_along_axis(np.max, 1, x_test_reconstructed[0]))
-word_list = list(np.vectorize(index2word.get)(reconstructed_indexes))
-print(''.join(word_list))
-original_sent = list(np.vectorize(index2word.get)(test[sent_idx]))
-print(''.join(original_sent))
+
+test_validation_equation(200, test, encoder, generator, tokenizer)
 
 
 #====================== Example ====================================#
