@@ -55,7 +55,7 @@ def calculate_equations_homology(equation1, equation2, n, encoder, pad_equation 
     return shortest_homology(encoded_equation1, encoded_equation2, n)
 
 
-def new_equation(homology, generator, latent_dimension, max_length_of_equation, tokenizer):
+def new_equations(homology, generator, latent_dimension, max_length_of_equation, tokenizer):
     for point in homology:
         sequence = generate_equation_sequence(point, latent_dimension, generator)
         indices = reconstruct_indices(sequence, len(tokenizer.word_index), max_length_of_equation)
