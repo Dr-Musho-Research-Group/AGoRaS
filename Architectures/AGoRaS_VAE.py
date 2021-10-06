@@ -14,7 +14,6 @@ from keras.models import Model, Input
 from keras.layers import Bidirectional, Dense, Embedding, Input, Lambda, LSTM, RepeatVector, Activation
 import tensorflow as tf
 from keras import backend as K
-from random import randint
 from src.loss_functions import zero_loss, kl_loss
 from src.loss_layers import CustomVariationalLayer
 from src.utils import sampling, create_model_checkpoint
@@ -136,21 +135,7 @@ equation2=['C.CCCO ~ O=O > CC(=O)C(C)=O ~ [OH-]']
 homology = calculate_equations_homology(equation1, equation2, 5, encoder, pad_equation = True)
 new_equations(homology, generator, latent_dimension, max_length_of_equation, tokenizer)
         
-generated_equations = []
 #A list of common errors to help eliminate bad equations from the generated set. 
-delete_list = ['~~','>>','= ', '[[', ']]', '> >', '[]','()','[ ', '[)', '(]', '~ ~', '\ \ ',
-               '###', '..', '==', '# ', '((', '))']
 
-while len(generated_equations) < 500000:
-    if len(generated_equations) < 500000:
-        num1 = randint(0, 6920)
-        num2 = randint(0, 6920)
-        equation1 = dataset[num1].reshape(1,len(dataset[0]))
-        equation2 = dataset[num2].reshape(1,len(dataset[0]))
-        homology = calculate_equations_homology(equation1, equation2, 5, encoder)
-        newintrp =  new_equation_generation(homology, generator, latent_dimension, max_length_of_equation, tokenizer)
-        newintrp = [x for x in newintrp if all(i not in x for i in delete_list)]
-    gen.extend(newintrp)
-    gen = list(set(gen))
-    
-    print(len(gen))
+new_equations = generate_equations(dataset, 500000, 5, generator, encoder, latent_dimension, max_length_of_equation, tokenizer)
+

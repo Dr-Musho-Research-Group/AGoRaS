@@ -1,7 +1,7 @@
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 from scipy import spatial
-
+from random import randint
 
 def padd_equation(sentence, tokenizer, max_length_of_equation):
     sequence = tokenizer.texts_to_sequences(sentence)
@@ -70,3 +70,26 @@ def new_equation_generation(homology, generator, latent_dimension, max_length_of
         equation = sequence_to_smiles(indices, tokenizer)
         list_reactions.append(equation)
     return list_reactions
+
+
+def generate_equations(dataset, number_of_total_equations, number_of_samples, generator, encoder, latent_dimension, max_length_of_equation, tokenizer)
+    equations = []
+    while len(equations) < number_of_total_equations:
+        equation1 = get_random_equation(dataset)
+        equation2 = get_random_equation(dataset)
+        homology = calculate_equations_homology(equation1, equation2, number_of_samples, encoder)
+        interpolated_equation = new_equation_generation(homology, generator, latent_dimension, max_length_of_equation, tokenizer)
+        new_equations = get_unique_equations(interpolated_equation)
+        equations.extend(new_equations)
+    return list(set(equations))
+
+
+def get_random_equation(dataset):
+        integer = randint(0, len(dataset))
+        return dataset[integer].reshape(1,len(dataset[0]))
+
+
+def get_unique_equations(equations):
+    delete_list = ['~~','>>','= ', '[[', ']]', '> >', '[]','()','[ ', '[)', '(]', '~ ~', '\ \ ',
+               '###', '..', '==', '# ', '((', '))']
+    return [equation for equation in equations if all(i not in equation for i in delete_list)]
