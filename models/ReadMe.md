@@ -1,1 +1,1 @@
-# Various VAE architectures for ChemNet
+# AGoRaS-VAE architecture
