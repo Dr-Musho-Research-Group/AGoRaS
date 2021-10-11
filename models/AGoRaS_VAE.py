@@ -93,12 +93,13 @@ print(K.eval(vae.optimizer.lr))
 K.set_value(vae.optimizer.lr, learning_rate)
 
 
+path = Path.cwd().joinpath("models")
+vae.save_weights(path.joinpath("agoras_vae.h5"))
 
-vae.save_weights('models/agoras_vae.h5')
 
 # build a model to project inputs on the latent space
 encoder = Model(input, z_mean)
-encoder.save('models/agoras_encoder.h5')
+encoder.save(path.joinpath("agoras_encoder.h5"))
 
 # build a generator that can sample from the learned distribution
 decoder_input = Input(shape=(latent_dimension,))
@@ -106,7 +107,7 @@ _h_decoded = decoder_latent_vector(repeated_context(decoder_input))
 _x_decoded_mean = decoder_mean(_h_decoded)
 _x_decoded_mean = Activation('softmax')(_x_decoded_mean)
 generator = Model(decoder_input, _x_decoded_mean)
-generator.save('models/agoras_generator.h5')
+generator.save(path.joinpath("agoras_generator.h5"))
 
 
 
